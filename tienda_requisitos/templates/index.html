@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIENDAS URBANO | Importación y Venta Online</title>
+    <style>
+        :root {
+            --primary: #111827;
+            --accent: #2563eb;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --border: #e5e7eb;
+            --danger: #dc2626;
+            --success: #059669;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--primary); padding-bottom: 78px; }
+
+        header {
+            background: var(--primary); color: white; padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo { font-weight: 800; font-size: 1.2rem; letter-spacing: 0.8px; cursor: pointer; }
+        .nav-desktop { display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap; }
+        .nav-btn {
+            background: rgba(255,255,255,0.12); border: none; color: white;
+            padding: 0.5rem 0.85rem; border-radius: 6px; cursor: pointer; font-weight: 500;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.22); }
+        .badge { background: var(--accent); padding: 2px 7px; border-radius: 99px; font-size: 0.75rem; margin-left: 4px; }
+
+        .nav-mobile {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--primary); color: white; justify-content: space-around;
+            padding: 0.55rem 0; z-index: 100; border-top: 1px solid #374151;
+        }
+        .nav-mobile button {
+            background: none; border: none; color: white; font-size: 0.72rem;
+            display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .nav-desktop { display: none; }
+            .nav-mobile { display: flex; }
+            header { padding: 0.8rem 1rem; }
+        }
+
+        .container { max-width: 1200px; margin: 1.5rem auto; padding: 0 1rem; }
+
+        .hero {
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            color: white; padding: 2.5rem 2rem; border-radius: 14px;
+            margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1rem;
+        }
+        .hero h1 { font-size: 2rem; line-height: 1.2; }
+        .hero p { color: #d1d5db; max-width: 720px; line-height: 1.5; }
+        .hero-actions { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .btn-hero {
+            background: var(--accent); color: white; border: none; padding: 0.75rem 1.4rem;
+            border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer;
+        }
+        .btn-secundario {
+            background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.25);
+            padding: 0.75rem 1.2rem; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer;
+        }
+        .highlights {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem;
+        }
+        .highlight-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem;
+        }
+        .highlight-card h3 { font-size: 1rem; margin-bottom: 0.4rem; }
+        .highlight-card p { font-size: 0.88rem; color: #4b5563; line-height: 1.45; }
+
+        .filtros-box {
+            background: var(--card); padding: 1.1rem; border-radius: 10px;
+            border: 1px solid var(--border); margin-bottom: 1.5rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 0.75rem;
+        }
+        .filtros-box input, .filtros-box select {
+            width: 100%; padding: 0.55rem; border: 1px solid var(--border); border-radius: 6px;
+        }
+
+        .grid-productos {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 1.2rem;
+        }
+        .card {
+            background: var(--card); border-radius: 10px; overflow: hidden;
+            border: 1px solid var(--border); display: flex; flex-direction: column;
+        }
+        .card img { width: 100%; height: 220px; object-fit: cover; background: #e5e7eb; }
+        .card-body { padding: 1rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 0.5rem 0; }
+        .tag { background: #f3f4f6; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; color: #4b5563; }
+        .price { font-size: 1.2rem; font-weight: 700; margin: 0.5rem 0; }
+        .card-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+        .btn-primary {
+            flex: 1; background: var(--accent); color: white; border: none;
+            padding: 0.6rem; border-radius: 6px; cursor: pointer; font-weight: 600;
+        }
+        .btn-fav {
+            background: #f3f4f6; border: 1px solid var(--border); padding: 0.6rem 0.85rem;
+            border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--primary);
+        }
+        .btn-fav.active { color: white; background: var(--danger); border-color: var(--danger); }
+
+        .vista { display: none; }
+        .vista.activa { display: block; }
+        .panel { background: var(--card); padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border); max-width: 720px; margin: 0 auto; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .form-group input, .form-group select { width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; }
+        .alert { padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem; display: none; }
+        .alert.error { background: #fee2e2; color: var(--danger); display: block; }
+        .alert.success { background: #d1fae5; color: var(--success); display: block; }
+
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid var(--border); gap: 1rem; }
+        .qty-controls { display: flex; align-items: center; gap: 0.5rem; }
+        .qty-controls button { width: 28px; height: 28px; border: 1px solid var(--border); background: white; cursor: pointer; border-radius: 4px; font-weight: 700; }
+
+        .btn-checkout-mockup {
+            margin-top: 1.2rem;
+            width: 100%;
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-checkout-mockup:hover { opacity: 0.95; }
+
+        .toast-container {
+            position: fixed;
+            top: 76px;
+            right: 20px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 340px;
+        }
+        .toast {
+            background: var(--primary);
+            color: white;
+            border-left: 4px solid var(--success);
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+            font-size: 0.88rem;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .toast.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo" onclick="cambiarVista('inicio')">TIENDAS URBANO</div>
+    <nav class="nav-desktop">
+        <button class="nav-btn" onclick="cambiarVista('inicio')">Inicio</button>
+        <button class="nav-btn" onclick="cambiarVista('catalogo')">Catálogo</button>
+        <button class="nav-btn" onclick="cambiarVista('favoritos')">Favoritos <span class="badge" id="fav-count-desk">0</span></button>
+        <button class="nav-btn" onclick="cambiarVista('carrito')">Carrito <span class="badge" id="cart-count-desk">0</span></button>
+        <button class="nav-btn" id="btn-auth-desk" onclick="cambiarVista('cuenta')">Registro / Ingreso</button>
+    </nav>
+</header>
+
+<nav class="nav-mobile">
+    <button onclick="cambiarVista('inicio')"><span>Inicio</span></button>
+    <button onclick="cambiarVista('catalogo')"><span>Catálogo</span></button>
+    <button onclick="cambiarVista('favoritos')"><span>Favoritos (<span id="fav-count-mob">0</span>)</span></button>
+    <button onclick="cambiarVista('carrito')"><span>Carrito (<span id="cart-count-mob">0</span>)</span></button>
+    <button onclick="cambiarVista('cuenta')"><span id="txt-auth-mob">Cuenta</span></button>
+</nav>
+
+<div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+<div class="container">
+    <!-- VISTA 0: INICIO -->
+    <section id="vista-inicio" class="vista activa">
+        <div class="hero">
+            <span style="font-size:0.85rem; color:#93c5fd; font-weight:600;">TIENDAS URBANO | IMPORTACIÓN DIRECTA</span>
+            <h1>Moda importada desde Asia con despacho a Santiago y regiones</h1>
+            <p>
+                Explora nuestra selección de ropa femenina, poleras, blazers, pantalones, parkas, chaquetas y trajes de baño,
+                con precios claros, filtros combinados y cálculo de envío antes de comprar.
+            </p>
+            <div class="hero-actions">
+                <button class="btn-hero" onclick="cambiarVista('catalogo')">Ir al Catálogo</button>
+                <button class="btn-secundario" onclick="cambiarVista('cuenta')">Crear cuenta B2C</button>
+            </div>
+        </div>
+
+        <div class="highlights">
+            <div class="highlight-card">
+                <h3>Precios transparentes</h3>
+                <p>Valores fijos en CLP por prenda y cálculo inmediato de despacho según comuna o región.</p>
+            </div>
+            <div class="highlight-card">
+                <h3>Búsqueda rápida</h3>
+                <p>Filtra por categoría, talla, color, material y precio máximo con respuesta inmediata.</p>
+            </div>
+            <div class="highlight-card">
+                <h3>Perfil y favoritos</h3>
+                <p>Guarda tus prendas favoritas en tu cuenta y gestiona tu carrito durante toda la sesión.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- VISTA 1: CATÁLOGO + BUSCADOR AVANZADO -->
+    <section id="vista-catalogo" class="vista">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+            <h2>Catálogo de Prendas Importadas</h2>
+            <button class="nav-btn" style="color:var(--primary); background:#e5e7eb;" onclick="cambiarVista('inicio')">Volver a Inicio</button>
+        </div>
+
+        <div class="filtros-box">
+            <input type="text" id="f-texto" placeholder="Buscar prenda..." oninput="filtrarCatalogo()">
+            <select id="f-categoria" onchange="filtrarCatalogo()">
+                <option value="">Todas las Categorías</option>
+                <option value="Ropa Femenina">Ropa Femenina</option>
+                <option value="Poleras">Poleras</option>
+                <option value="Blazers">Blazers</option>
+                <option value="Pantalones">Pantalones</option>
+                <option value="Parkas">Parkas</option>
+                <option value="Chaquetas">Chaquetas</option>
+                <option value="Trajes de Baño">Trajes de Baño</option>
+            </select>
+            <select id="f-talla" onchange="filtrarCatalogo()">
+                <option value="">Todas las Tallas</option>
+                <option value="XS">XS</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+            </select>
+            <select id="f-color" onchange="filtrarCatalogo()">
+                <option value="">Todos los Colores</option>
+                <option value="Negro">Negro</option>
+                <option value="Blanco">Blanco</option>
+                <option value="Verde">Verde</option>
+                <option value="Beige">Beige</option>
+                <option value="Azul">Azul</option>
+                <option value="Rojo">Rojo</option>
+            </select>
+            <select id="f-material" onchange="filtrarCatalogo()">
+                <option value="">Todos los Materiales</option>
+                <option value="Algodón">Algodón</option>
+                <option value="Poliéster">Poliéster</option>
+                <option value="Nylon">Nylon</option>
+                <option value="Cuero PU">Cuero PU</option>
+                <option value="Spandex">Spandex</option>
+                <option value="Viscosa">Viscosa</option>
+            </select>
+            <input type="number" id="f-precio" placeholder="Precio máx ($ CLP)" oninput="filtrarCatalogo()">
+        </div>
+        <div class="grid-productos" id="grid-catalogo"></div>
+    </section>
+
+    <!-- VISTA 2: FAVORITOS -->
+    <section id="vista-favoritos" class="vista">
+        <h2 style="margin-bottom:1rem;">Mis Prendas Favoritas</h2>
+        <div class="grid-productos" id="grid-favoritos"></div>
+    </section>
+
+    <!-- VISTA 3: CARRITO Y DESPACHO -->
+    <section id="vista-carrito" class="vista">
+        <div class="panel">
+            <h2 style="margin-bottom:1rem;">Carrito de Compras</h2>
+            <div id="lista-carrito"></div>
+
+            <div style="margin-top:1.5rem; padding-top:1rem; border-top:2px solid var(--border);">
+                <h3 style="margin-bottom:0.8rem;">Cálculo de Costo de Despacho (Santiago y Regiones)</h3>
+                <div class="form-group">
+                    <label>Destino de Envío (Comuna / Región):</label>
+                    <select id="select-destino" onchange="calcularDespacho()">
+                        <option value="">-- Seleccionar destino --</option>
+                        <option value="rm_centro">RM - Santiago / Providencia / Ñuñoa / San Joaquín</option>
+                        <option value="rm_periferia">RM - Maipú / Puente Alto / La Florida / San Bernardo</option>
+                        <option value="valparaiso">V Región - Valparaíso / Viña del Mar</option>
+                        <option value="biobio">VIII Región - Concepción / Talcahuano</option>
+                        <option value="extremo">XI / XII Región - Aysén / Magallanes</option>
+                        <option value="sin_cobertura">Isla de Pascua / Juan Fernández (Sin Cobertura)</option>
+                    </select>
+                </div>
+                <div id="alerta-despacho" class="alert"></div>
+                <div style="font-size:1.05rem; line-height:1.8;">
+                    <div>Subtotal Prendas: <strong id="res-subtotal">$0</strong></div>
+                    <div>Costo Despacho: <strong id="res-flete">$0</strong></div>
+                    <div style="font-size:1.3rem; color:var(--accent);">Total Estimado: <strong id="res-total">$0</strong></div>
+                </div>
+
+                <button type="button" class="btn-checkout-mockup" onclick="accionIrAPagarMockup()">
+                    Ir a pagar
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- VISTA 4: REGISTRO DE CLIENTE NATURAL B2C -->
+    <section id="vista-cuenta" class="vista">
+        <div class="panel" id="panel-perfil" style="display:none;">
+            <h2>Perfil Cliente Natural B2C</h2>
+            <p style="margin:1rem 0;" id="datos-perfil"></p>
+            <button class="btn-primary" style="background:var(--danger);" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+
+        <div class="panel" id="panel-formularios">
+            <h2 style="margin-bottom:0.5rem;">Registro de Cliente Natural (B2C)</h2>
+            <p style="font-size:0.85rem; color:#6b7280; margin-bottom:1rem;">Validación de RUT chileno y cifrado Bcrypt en base de datos.</p>
+            <div id="alerta-auth" class="alert"></div>
+
+            <form onsubmit="registrarCliente(event)">
+                <div class="form-group">
+                    <label>Nombre Completo *</label>
+                    <input type="text" id="reg-nombre" required placeholder="Ej: Valentina Pérez Soto">
+                </div>
+                <div class="form-group">
+                    <label>RUT Chileno *</label>
+                    <input type="text" id="reg-rut" required placeholder="Ej: 12.345.678-5">
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico *</label>
+                    <input type="email" id="reg-email" required placeholder="cliente@correo.cl">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña (mínimo 6 caracteres) *</label>
+                    <input type="password" id="reg-pass" required minlength="6">
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%;">Crear Cuenta B2C</button>
+            </form>
+
+            <hr style="margin:1.5rem 0;">
+            <h3 style="margin-bottom:0.8rem;">¿Ya tienes cuenta? Inicia Sesión</h3>
+            <form onsubmit="iniciarSesion(event)">
+                <div class="form-group">
+                    <input type="email" id="log-email" required placeholder="Correo registrado">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="log-pass" required placeholder="Contraseña">
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%; background:var(--primary);">Ingresar</button>
+            </form>
+        </div>
+    </section>
+</div>
+
+<script>
+    let productos = [];
+    let carrito = {};
+    let favoritos = [];
+    let usuario = null;
+    let costoFleteActual = 0;
+
+    const TARIFAS_DESPACHO = {
+        rm_centro: { precio: 3500, cobertura: true, msg: "Despacho desde bodega central a RM Zona Urbana (24-48 hrs)." },
+        rm_periferia: { precio: 4500, cobertura: true, msg: "Despacho desde bodega central a RM Zona Extendida (48 hrs)." },
+        valparaiso: { precio: 6500, cobertura: true, msg: "Despacho interregional a V Región (2-3 días hábiles)." },
+        biobio: { precio: 7900, cobertura: true, msg: "Despacho interregional a VIII Región (3-4 días hábiles)." },
+        extremo: { precio: 14900, cobertura: true, msg: "Despacho interregional a Zona Extrema (4-6 días hábiles)." },
+        sin_cobertura: { precio: 0, cobertura: false, msg: "Destino sin cobertura de despacho disponible actualmente." }
+    };
+
+    const formatoCLP = (num) => '$' + num.toLocaleString('es-CL');
+
+    function mostrarNotificacion(mensaje, esError = false) {
+        const cont = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast' + (esError ? ' error' : '');
+        toast.textContent = mensaje;
+        cont.appendChild(toast);
+
+        requestAnimationFrame(() => toast.classList.add('visible'));
+
+        setTimeout(() => {
+            toast.classList.remove('visible');
+            setTimeout(() => toast.remove(), 220);
+        }, 2800);
+    }
+
+    function accionIrAPagarMockup() {
+        mostrarNotificacion("Botón 'Ir a pagar' de referencia (mockup sin pasarela activa en este sprint).");
+    }
+
+    async function inicializar() {
+        const [resProd, resEstado] = await Promise.all([
+            fetch('/api/productos').then(r => r.json()),
+            fetch('/api/estado').then(r => r.json())
+        ]);
+        productos = resProd;
+        carrito = resEstado.carrito || {};
+        favoritos = resEstado.favoritos || [];
+        usuario = resEstado.user;
+        actualizarUI();
+        filtrarCatalogo();
+    }
+
+    function cambiarVista(nombre) {
+        document.querySelectorAll('.vista').forEach(v => v.classList.remove('activa'));
+        document.getElementById('vista-' + nombre).classList.add('activa');
+        if (nombre === 'favoritos') renderFavoritos();
+        if (nombre === 'carrito') renderCarrito();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function filtrarCatalogo() {
+        const t0 = performance.now();
+        const txt = document.getElementById('f-texto').value.toLowerCase();
+        const cat = document.getElementById('f-categoria').value;
+        const talla = document.getElementById('f-talla').value;
+        const color = document.getElementById('f-color').value;
+        const mat = document.getElementById('f-material').value;
+        const precioMax = parseInt(document.getElementById('f-precio').value) || Infinity;
+
+        const filtrados = productos.filter(p =>
+            (!txt || p.nombre.toLowerCase().includes(txt)) &&
+            (!cat || p.categoria === cat) &&
+            (!talla || p.talla === talla) &&
+            (!color || p.color === color) &&
+            (!mat || p.material === mat) &&
+            (p.precio <= precioMax)
+        );
+
+        renderGrid(filtrados, 'grid-catalogo');
+        const t1 = performance.now();
+        if (t1 - t0 > 2000) {
+            console.warn('Advertencia RNF: filtrado sobre 2000 ms');
+        }
+    }
+
+    function renderGrid(lista, contenedorId) {
+        const cont = document.getElementById(contenedorId);
+        if (!lista.length) {
+            cont.innerHTML = '<p>No se encontraron prendas con esos criterios.</p>';
+            return;
+        }
+        cont.innerHTML = lista.map(p => {
+            const esFav = favoritos.includes(p.id);
+            return `
+            <div class="card">
+                <img src="/static/img/${p.imagen}" alt="${p.nombre}"
+                     onerror="this.src='https://placehold.co/400x300/111827/white?text=${encodeURIComponent(p.nombre)}'">
+                <div class="card-body">
+                    <div>
+                        <small style="color:#6b7280;">${p.categoria} | Stock: ${p.stock}</small>
+                        <h3 style="font-size:1.05rem; margin-top:2px;">${p.nombre}</h3>
+                        <div class="tags">
+                            <span class="tag">Talla: ${p.talla}</span>
+                            <span class="tag">${p.color}</span>
+                            <span class="tag">${p.material}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="price">${formatoCLP(p.precio)}</div>
+                        <div class="card-actions">
+                            <button class="btn-primary" onclick="modificarCarrito(${p.id}, 'add', 1)">+ Agregar</button>
+                            <button class="btn-fav ${esFav ? 'active' : ''}" onclick="toggleFav(${p.id})">${esFav ? 'En favoritos' : 'Favorito'}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    async function toggleFav(id) {
+        const res = await fetch('/api/favoritos/toggle', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ producto_id: id })
+        });
+        const data = await res.json();
+        if (!data.ok) {
+            mostrarNotificacion(data.error, true);
+            cambiarVista('cuenta');
+            return;
+        }
+        favoritos = data.favoritos || [];
+        actualizarUI();
+        filtrarCatalogo();
+        renderFavoritos();
+
+        const prod = productos.find(p => p.id === id);
+        const nombreProd = prod ? prod.nombre : 'Producto';
+        if (data.agregado) {
+            mostrarNotificacion(`"${nombreProd}" agregado correctamente a favoritos.`);
+        } else {
+            mostrarNotificacion(`"${nombreProd}" eliminado de favoritos.`);
+        }
+    }
+
+    function renderFavoritos() {
+        const favProds = productos.filter(p => favoritos.includes(p.id));
+        renderGrid(favProds, 'grid-favoritos');
+    }
+
+    async function modificarCarrito(id, accion, cantidad) {
+        const res = await fetch('/api/carrito', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ producto_id: id, accion, cantidad })
+        });
+        const data = await res.json();
+        if (!data.ok) {
+            mostrarNotificacion(data.error, true);
+            return;
+        }
+        carrito = data.carrito || {};
+        actualizarUI();
+        renderCarrito();
+
+        if (accion === 'add') {
+            const prod = productos.find(p => p.id === id);
+            const nombreProd = prod ? prod.nombre : 'Producto';
+            mostrarNotificacion(`"${nombreProd}" agregado con éxito al carrito.`);
+        }
+    }
+
+    function renderCarrito() {
+        const cont = document.getElementById('lista-carrito');
+        const ids = Object.keys(carrito);
+        if (!ids.length) {
+            cont.innerHTML = '<p style="color:#6b7280;">Tu carrito está vacío.</p>';
+            calcularDespacho();
+            return;
+        }
+        cont.innerHTML = ids.map(id => {
+            const p = productos.find(item => item.id == id);
+            if (!p) return '';
+            const cant = carrito[id];
+            return `
+            <div class="cart-item">
+                <div>
+                    <strong>${p.nombre}</strong><br>
+                    <small>${formatoCLP(p.precio)} c/u (Stock máx: ${p.stock})</small>
+                </div>
+                <div class="qty-controls">
+                    <button onclick="modificarCarrito(${p.id}, 'update', ${cant - 1})">-</button>
+                    <span><strong>${cant}</strong></span>
+                    <button onclick="modificarCarrito(${p.id}, 'update', ${cant + 1})">+</button>
+                    <button style="color:red; border:none;" onclick="modificarCarrito(${p.id}, 'remove', 0)">X</button>
+                </div>
+            </div>`;
+        }).join('');
+        calcularDespacho();
+    }
+
+    function calcularDespacho() {
+        const t0 = performance.now();
+        const dest = document.getElementById('select-destino').value;
+        const alerta = document.getElementById('alerta-despacho');
+        alerta.className = 'alert';
+
+        let subtotal = 0;
+        for (const [id, cant] of Object.entries(carrito)) {
+            const p = productos.find(item => item.id == id);
+            if (p) subtotal += p.precio * cant;
+        }
+
+        if (!dest) {
+            costoFleteActual = 0;
+        } else {
+            const info = TARIFAS_DESPACHO[dest];
+            costoFleteActual = info.precio;
+            alerta.textContent = info.msg;
+            alerta.classList.add(info.cobertura ? 'success' : 'error');
+        }
+
+        document.getElementById('res-subtotal').textContent = formatoCLP(subtotal);
+        document.getElementById('res-flete').textContent = formatoCLP(costoFleteActual);
+        document.getElementById('res-total').textContent = formatoCLP(subtotal + costoFleteActual);
+
+        const t1 = performance.now();
+        if (t1 - t0 > 200) {
+            console.warn('Advertencia RNF: cálculo de despacho sobre 200 ms');
+        }
+    }
+
+    async function registrarCliente(e) {
+        e.preventDefault();
+        const body = {
+            nombre: document.getElementById('reg-nombre').value,
+            rut: document.getElementById('reg-rut').value,
+            email: document.getElementById('reg-email').value,
+            password: document.getElementById('reg-pass').value
+        };
+        const res = await fetch('/api/registro', {
+            method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        const alerta = document.getElementById('alerta-auth');
+        if (!data.ok) {
+            alerta.className = 'alert error';
+            alerta.textContent = data.error;
+            return;
+        }
+        alerta.className = 'alert success';
+        alerta.textContent = `Cuenta creada. Hash Bcrypt guardado en BD: ${data.hash_preview}`;
+        usuario = data.user;
+        const est = await fetch('/api/estado').then(r => r.json());
+        favoritos = est.favoritos || [];
+        carrito = est.carrito || {};
+        actualizarUI();
+        filtrarCatalogo();
+        renderCarrito();
+    }
+
+    async function iniciarSesion(e) {
+        e.preventDefault();
+        const body = {
+            email: document.getElementById('log-email').value,
+            password: document.getElementById('log-pass').value
+        };
+        const res = await fetch('/api/login', {
+            method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        const alerta = document.getElementById('alerta-auth');
+        if (!data.ok) {
+            alerta.className = 'alert error';
+            alerta.textContent = data.error;
+            return;
+        }
+        usuario = data.user;
+        const est = await fetch('/api/estado').then(r => r.json());
+        favoritos = est.favoritos || [];
+        carrito = est.carrito || {};
+        actualizarUI();
+        filtrarCatalogo();
+        renderCarrito();
+    }
+
+    async function cerrarSesion() {
+        await fetch('/api/logout', { method: 'POST' });
+        usuario = null;
+        favoritos = [];
+        carrito = {};
+        actualizarUI();
+        filtrarCatalogo();
+        renderCarrito();
+    }
+
+    function actualizarUI() {
+        const totalItems = Object.values(carrito).reduce((a, b) => a + b, 0);
+        document.getElementById('cart-count-desk').textContent = totalItems;
+        document.getElementById('cart-count-mob').textContent = totalItems;
+        document.getElementById('fav-count-desk').textContent = favoritos.length;
+        document.getElementById('fav-count-mob').textContent = favoritos.length;
+
+        if (usuario) {
+            document.getElementById('btn-auth-desk').textContent = usuario.nombre.split(' ')[0];
+            document.getElementById('txt-auth-mob').textContent = usuario.nombre.split(' ')[0];
+            document.getElementById('panel-perfil').style.display = 'block';
+            document.getElementById('panel-formularios').style.display = 'none';
+            document.getElementById('datos-perfil').innerHTML = `
+                <strong>Nombre:</strong> ${usuario.nombre}<br>
+                <strong>RUT Validado:</strong> ${usuario.rut}<br>
+                <strong>Email:</strong> ${usuario.email}`;
+        } else {
+            document.getElementById('btn-auth-desk').textContent = 'Registro / Ingreso';
+            document.getElementById('txt-auth-mob').textContent = 'Cuenta';
+            document.getElementById('panel-perfil').style.display = 'none';
+            document.getElementById('panel-formularios').style.display = 'block';
+        }
+    }
+
+    inicializar();
+</script>
+</body>
+</html>
